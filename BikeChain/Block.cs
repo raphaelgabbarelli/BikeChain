@@ -23,8 +23,8 @@ namespace BikeChain
         {
             return $"Block - \n" +
                 $"Timestamp - {Timestamp.Ticks}\n" +
-                $"Previous hash - {Convert.ToBase64String(PreviousHash)}\n" +
-                $"Hash - {Convert.ToBase64String(Hash)}\n" +
+                $"Previous hash - {Encoding.UTF8.GetString(PreviousHash)}\n" +
+                $"Hash - {Encoding.UTF8.GetString(Hash)}\n" +
                 $"Data - {Convert.ToBase64String(Data)}";
         }
     }
