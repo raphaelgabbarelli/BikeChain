@@ -31,6 +31,18 @@ namespace BikeChain.Tests
             Assert.Contains(thisHash, representation);
         }
 
-        
+        [Fact]
+        public void Mine2ndBlock()
+        {
+            BlockRepository blockRepo = new BlockRepository();
+            Block genesis = blockRepo.CreateGenesisBlock();
+
+            byte[] data = Encoding.UTF8.GetBytes("fakedata");
+            Block newBlock = blockRepo.MineBlock(genesis, data);
+
+            Assert.NotNull(newBlock);
+            Assert.Equal(genesis.Hash, newBlock.PreviousHash);
+            Assert.Contains(Convert.ToBase64String(data), newBlock.ToString());
+        }
     }
 }
