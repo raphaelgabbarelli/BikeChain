@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using System.Linq;
 
 namespace BikeChain
 {
@@ -33,9 +34,16 @@ namespace BikeChain
             if (data == null) throw new ArgumentNullException("data", "data cannot be null");
             if (data.Length == 0) throw new ArgumentException("data cannot be empty", "data");
 
-            byte[] hash = Encoding.UTF8.GetBytes("not a hash");
+            DateTime timestamp = DateTime.UtcNow;
+            byte[] toHash = Encoding.UTF8.GetBytes(timestamp.Ticks.ToString()).Concat(previousBlock.Hash).Concat(data).ToArray<byte>();
 
-            return new Block(DateTime.UtcNow, previousBlock.Hash, hash, data);
+            byte[] hash = new byte[32];
+            using (var hasher = SHA256.Create())
+            {
+                hash = hasher.ComputeHash(toHash);
+            }
+
+            return new Block(timestamp, previousBlock.Hash, hash, data);
         }
     }
 }
