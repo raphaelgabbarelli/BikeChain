@@ -4,7 +4,7 @@ using System.Text;
 
 namespace BikeChain
 {
-    public class Block
+    public class Block : ICloneable
     {
         public DateTime Timestamp { get; set; }
         public byte[] PreviousHash { get; set; }
@@ -26,6 +26,11 @@ namespace BikeChain
                 $"Previous hash - {BitConverter.ToString(PreviousHash).Replace("-", "").ToLower()}\n" +
                 $"Hash - {BitConverter.ToString(Hash).Replace("-", "").ToLower()}\n" +
                 $"Data - {Convert.ToBase64String(Data)}";
+        }
+
+        public object Clone()
+        {
+            return new Block(new DateTime(Timestamp.Ticks), PreviousHash.Clone() as byte[], Hash.Clone() as byte[], Data.Clone() as byte[]);
         }
     }
 }
