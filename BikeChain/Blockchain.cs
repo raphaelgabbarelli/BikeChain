@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace BikeChain
 {
+    [Serializable]
     public class Blockchain
     {
         private List<Block> blocks;
 
+        [NonSerialized]
         private BlockRepository blockRepo = new BlockRepository();
 
         public Blockchain()
@@ -37,6 +40,29 @@ namespace BikeChain
             {
                 return blocks[blocks.Count - 1].Clone() as Block;
             }
+        }
+
+        public static bool IsValidChain(Blockchain chain)
+        {
+            var blockRepo = new BlockRepository();
+            if (!chain.blocks[0].Equals(blockRepo.CreateGenesisBlock()))
+            {
+                return false;
+            }
+
+            for (int i = 1; i < chain.blocks.Count; i++)
+            {
+                Block currentBlock = chain.blocks[i];
+                Block previousBlock = chain.blocks[i - 1];
+
+                if(!currentBlock.PreviousHash.SequenceEqual(previousBlock.Hash) ||
+                    !currentBlock.Hash.SequenceEqual(blockRepo.HashBlock(currentBlock)))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }
