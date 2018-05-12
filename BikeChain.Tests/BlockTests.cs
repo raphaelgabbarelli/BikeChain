@@ -1,6 +1,7 @@
 using System;
 using Xunit;
 using System.Text;
+using BikeChain.Tests.Utils;
 
 namespace BikeChain.Tests
 {
@@ -19,8 +20,8 @@ namespace BikeChain.Tests
             string representation = block.ToString();
 
             Assert.Contains(timestamp.Ticks.ToString(), representation);
-            Assert.Contains(PREV_HASH, representation);
-            Assert.Contains(THIS_HASH, representation);
+            Assert.Contains( Transformations.ByteArrayToHexString(Encoding.UTF8.GetBytes(PREV_HASH)), representation);
+            Assert.Contains(Transformations.ByteArrayToHexString(Encoding.UTF8.GetBytes(THIS_HASH)), representation);
             Assert.Contains(Convert.ToBase64String(Encoding.UTF8.GetBytes(FAKE_DATA)), representation);
         }
     }
