@@ -5,7 +5,9 @@ VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BikeChain", "BikeChain\BikeChain.csproj", "{9161B4D2-3200-414B-A88F-7E746EF3BDBB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BikeChain.Tests", "BikeChain.Tests\BikeChain.Tests.csproj", "{5F571069-B21F-48B0-B109-8B648A5FDAE8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BikeChain.Tests", "BikeChain.Tests\BikeChain.Tests.csproj", "{5F571069-B21F-48B0-B109-8B648A5FDAE8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BikeChain.API", "BikeChain.API\BikeChain.API.csproj", "{67503722-5D4E-46D6-AE18-AB674FFD609D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{5F571069-B21F-48B0-B109-8B648A5FDAE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F571069-B21F-48B0-B109-8B648A5FDAE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5F571069-B21F-48B0-B109-8B648A5FDAE8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67503722-5D4E-46D6-AE18-AB674FFD609D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67503722-5D4E-46D6-AE18-AB674FFD609D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67503722-5D4E-46D6-AE18-AB674FFD609D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67503722-5D4E-46D6-AE18-AB674FFD609D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
