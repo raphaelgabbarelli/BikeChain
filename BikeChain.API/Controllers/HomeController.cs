@@ -3,33 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using BikeChain.dto;
 
 namespace BikeChain.API.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        private Blockchain blockchain = Program.Blockchain;
+
+        public JsonResult Blocks()
         {
-            return View();
-        }
-
-        public IActionResult About()
-        {
-            ViewData["Message"] = "Your application description page.";
-
-            return View();
-        }
-
-        public IActionResult Contact()
-        {
-            ViewData["Message"] = "Your contact page.";
-
-            return View();
-        }
-
-        public IActionResult Error()
-        {
-            return View();
+            if(blockchain != null && blockchain.IsValidChain())
+            { 
+                return Json(new { status = "ok", blockchain = (BlockchainDto)blockchain });
+            }
+            return Json(new { status = "empty" });
         }
     }
 }

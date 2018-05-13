@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BikeChain.dto;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -41,7 +42,7 @@ namespace BikeChain
                 return blocks[blocks.Count - 1].Clone() as Block;
             }
         }
-
+        
         public int Length
         {
             get
@@ -90,6 +91,18 @@ namespace BikeChain
             blocks = newBlockchain.blocks;
 
             return (true, null, null);
+        }
+
+        public static explicit operator BlockchainDto(Blockchain blockchain)
+        {
+            BlockchainDto dto = new BlockchainDto();
+
+            foreach (var block in blockchain.blocks)
+            {
+                dto.Blocks.Add(new BlockDto(block));
+            }
+
+            return dto;
         }
     }
 }
