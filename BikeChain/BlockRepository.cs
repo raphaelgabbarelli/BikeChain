@@ -35,15 +35,25 @@ namespace BikeChain
             if (data.Length == 0) throw new ArgumentException("data cannot be empty", "data");
 
             DateTime timestamp = DateTime.UtcNow;
-            byte[] toHash = Encoding.UTF8.GetBytes(timestamp.Ticks.ToString()).Concat(previousBlock.Hash).Concat(data).ToArray<byte>();
+            byte[] hash = HashBlock(timestamp, previousBlock.Hash, data);
+
+            return new Block(timestamp, previousBlock.Hash, hash, data);
+        }
+
+        public byte[] HashBlock(DateTime timestamp, byte[] previousHash, byte[] data)
+        {
+            byte[] toHash = Encoding.UTF8.GetBytes(timestamp.Ticks.ToString()).Concat(previousHash).Concat(data).ToArray<byte>();
 
             byte[] hash = new byte[32];
             using (var hasher = SHA256.Create())
             {
-                hash = hasher.ComputeHash(toHash);
+                return hasher.ComputeHash(toHash);
             }
+        }
 
-            return new Block(timestamp, previousBlock.Hash, hash, data);
+        public byte[] HashBlock(Block block)
+        {
+            return HashBlock(block.Timestamp, block.PreviousHash, block.Data);
         }
     }
 }

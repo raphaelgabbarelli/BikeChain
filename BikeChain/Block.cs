@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace BikeChain
 {
-    public class Block
+    [Serializable]
+    public class Block : ICloneable, IEquatable<Block>
     {
         public DateTime Timestamp { get; set; }
         public byte[] PreviousHash { get; set; }
@@ -26,6 +28,20 @@ namespace BikeChain
                 $"Previous hash - {BitConverter.ToString(PreviousHash).Replace("-", "").ToLower()}\n" +
                 $"Hash - {BitConverter.ToString(Hash).Replace("-", "").ToLower()}\n" +
                 $"Data - {Convert.ToBase64String(Data)}";
+        }
+
+        public object Clone()
+        {
+            return new Block(new DateTime(Timestamp.Ticks), PreviousHash.Clone() as byte[], Hash.Clone() as byte[], Data.Clone() as byte[]);
+        }
+
+        public bool Equals(Block other)
+        {
+            bool isEqual = Timestamp == other.Timestamp &&
+                PreviousHash.SequenceEqual(other.PreviousHash) &&
+                Hash.SequenceEqual(other.Hash) &&
+                Data.SequenceEqual(other.Data);
+            return isEqual;
         }
     }
 }
