@@ -42,18 +42,26 @@ namespace BikeChain
             }
         }
 
-        public static bool IsValidChain(Blockchain chain)
+        public int Length
+        {
+            get
+            {
+                return blocks.Count;
+            }
+        }
+
+        public bool IsValidChain()
         {
             var blockRepo = new BlockRepository();
-            if (!chain.blocks[0].Equals(blockRepo.CreateGenesisBlock()))
+            if (!blocks[0].Equals(blockRepo.CreateGenesisBlock()))
             {
                 return false;
             }
 
-            for (int i = 1; i < chain.blocks.Count; i++)
+            for (int i = 1; i < blocks.Count; i++)
             {
-                Block currentBlock = chain.blocks[i];
-                Block previousBlock = chain.blocks[i - 1];
+                Block currentBlock = blocks[i];
+                Block previousBlock = blocks[i - 1];
 
                 if(!currentBlock.PreviousHash.SequenceEqual(previousBlock.Hash) ||
                     !currentBlock.Hash.SequenceEqual(blockRepo.HashBlock(currentBlock)))
@@ -63,6 +71,25 @@ namespace BikeChain
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Replaces the blocks of the blockchain with a longer and valid incoming blockchain
+        /// </summary>
+        /// <param name="newBlockchain">incoming blockchain</param>
+        /// <returns>true if the operation is successful. 
+        /// In case of invalid incoming chain: 
+        /// <paramref name="incomingChainTooShort"/> indicates that <paramref name="newBlockchain"/> is shorter or of equal length
+        /// <paramref name="incomingChainInvalid" /> indicates that <paramref name="newBlockchain"/> is invalid
+        /// </returns>
+        public (bool result, bool? incomingChainTooShort, bool? incomingChainInvalid) ReplaceBlocks(Blockchain newBlockchain)
+        {
+            if(newBlockchain.Length <= Length) { return (false, true, null); }
+            if(!newBlockchain.IsValidChain()) { return (false, false, true); }
+
+            blocks = newBlockchain.blocks;
+
+            return (true, null, null);
         }
     }
 }

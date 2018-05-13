@@ -27,22 +27,20 @@ namespace BikeChain.Tests
         {
             Blockchain blockchain = new Blockchain();
 
-            Assert.True(Blockchain.IsValidChain(blockchain));
+            Assert.True(blockchain.IsValidChain());
 
             blockchain.AddBlock(Encoding.UTF8.GetBytes("x123 sends 0.1 BIKECOINS to y456"));
 
-            Assert.True(Blockchain.IsValidChain(blockchain));
+            Assert.True(blockchain.IsValidChain());
         }
 
-        [Fact]
-        public void RejectTamperedChain()
+        // TODO: move to fixture
+        /// <summary>
+        /// Utility method that tampers with a blockchain
+        /// </summary>
+        /// <param name="blockchain"></param>
+        private Blockchain TamperWithChain(Blockchain blockchain)
         {
-            Blockchain blockchain = new Blockchain();
-            blockchain.AddBlock(Encoding.UTF8.GetBytes("x123 sends 0.1 BIKECOINS to y456"));
-            blockchain.AddBlock(Encoding.UTF8.GetBytes("more transactions"));
-            blockchain.AddBlock(Encoding.UTF8.GetBytes("smart contract data"));
-            Assert.True(Blockchain.IsValidChain(blockchain));   // not tampered yet
-
             BinaryFormatter binaryFormatter = new BinaryFormatter();
             MemoryStream memoryStream = new MemoryStream();
             binaryFormatter.Serialize(memoryStream, blockchain);
@@ -52,8 +50,85 @@ namespace BikeChain.Tests
             memoryStream.Seek(0, SeekOrigin.Begin);
 
             var tamperedBlockchain = binaryFormatter.Deserialize(memoryStream) as Blockchain;
+            return tamperedBlockchain;
+        }
+
+        [Fact]
+        public void RejectTamperedChain()
+        {
+            Blockchain blockchain = new Blockchain();
+            blockchain.AddBlock(Encoding.UTF8.GetBytes("x123 sends 0.1 BIKECOINS to y456"));
+            blockchain.AddBlock(Encoding.UTF8.GetBytes("more transactions"));
+            blockchain.AddBlock(Encoding.UTF8.GetBytes("smart contract data"));
+            Assert.True(blockchain.IsValidChain());   // not tampered yet
+
+            Blockchain tamperedBlockchain = TamperWithChain(blockchain);
+
+            
             Assert.NotNull(tamperedBlockchain);
-            Assert.False(Blockchain.IsValidChain(tamperedBlockchain));
+            Assert.False(tamperedBlockchain.IsValidChain());
+        }
+
+        [Fact]
+        public void ReplaceWithGoodChain()
+        {
+            Blockchain blockchain = new Blockchain();
+            blockchain.AddBlock(Encoding.UTF8.GetBytes("x123 sends 0.1 BIKECOINS to y456"));
+            blockchain.AddBlock(Encoding.UTF8.GetBytes("more transactions"));
+            blockchain.AddBlock(Encoding.UTF8.GetBytes("smart contract data"));
+
+            Blockchain newBlockchain = new Blockchain();
+            newBlockchain.AddBlock(Encoding.UTF8.GetBytes("x123 sends 0.1 BIKECOINS to y456"));
+            newBlockchain.AddBlock(Encoding.UTF8.GetBytes("more transactions"));
+            newBlockchain.AddBlock(Encoding.UTF8.GetBytes("smart contract data"));
+            newBlockchain.AddBlock(Encoding.UTF8.GetBytes("some other transactions"));
+            newBlockchain.AddBlock(Encoding.UTF8.GetBytes("latest transactions here"));
+
+            (bool result, bool? tooShort, bool? invalid) = blockchain.ReplaceBlocks(newBlockchain);
+            Assert.True(result);
+            Assert.False(tooShort.HasValue);
+            Assert.False(invalid.HasValue);
+        }
+
+        [Fact]
+        public void DontReplaceWithShortChain()
+        {
+            Blockchain blockchain = new Blockchain();
+            blockchain.AddBlock(Encoding.UTF8.GetBytes("x123 sends 0.1 BIKECOINS to y456"));
+            blockchain.AddBlock(Encoding.UTF8.GetBytes("more transactions"));
+            blockchain.AddBlock(Encoding.UTF8.GetBytes("smart contract data"));
+
+            Blockchain newBlockchain = new Blockchain();
+            newBlockchain.AddBlock(Encoding.UTF8.GetBytes("x123 sends 0.1 BIKECOINS to y456"));
+            newBlockchain.AddBlock(Encoding.UTF8.GetBytes("more transactions"));
+
+            (bool result, bool? tooShort, bool? invalid) = blockchain.ReplaceBlocks(newBlockchain);
+            Assert.False(result);
+            Assert.True(tooShort.HasValue && tooShort.Value);
+            Assert.False(invalid.HasValue);
+        }
+
+        [Fact]
+        public void DontReplaceWithInvalidChain()
+        {
+            Blockchain blockchain = new Blockchain();
+            blockchain.AddBlock(Encoding.UTF8.GetBytes("x123 sends 0.1 BIKECOINS to y456"));
+            blockchain.AddBlock(Encoding.UTF8.GetBytes("more transactions"));
+            blockchain.AddBlock(Encoding.UTF8.GetBytes("smart contract data"));
+
+            Blockchain newBlockchain = new Blockchain();
+            newBlockchain.AddBlock(Encoding.UTF8.GetBytes("x123 sends 0.1 BIKECOINS to y456"));
+            newBlockchain.AddBlock(Encoding.UTF8.GetBytes("more transactions"));
+            newBlockchain.AddBlock(Encoding.UTF8.GetBytes("smart contract data"));
+            newBlockchain.AddBlock(Encoding.UTF8.GetBytes("some other transactions"));
+            newBlockchain.AddBlock(Encoding.UTF8.GetBytes("latest transactions here"));
+
+            Blockchain tamperedBlockchain = TamperWithChain(newBlockchain);
+
+            (bool result, bool? tooShort, bool? invalid) = blockchain.ReplaceBlocks(tamperedBlockchain);
+            Assert.False(result);
+            Assert.False(tooShort);
+            Assert.True(invalid.HasValue && invalid.Value);
         }
     }
 }
