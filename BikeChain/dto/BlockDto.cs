@@ -8,7 +8,7 @@ namespace BikeChain.dto
     {
         public BlockDto(Block block)
         {
-            Timestamp = (block.Timestamp - new DateTime(1970, 1, 1)).TotalMilliseconds;
+            Timestamp = (long)(block.Timestamp - new DateTime(1970, 1, 1)).TotalMilliseconds;
             PreviousHash = BitConverter.ToString(block.PreviousHash).Replace("-", "").ToLower();
             Hash = BitConverter.ToString(block.Hash).Replace("-", "").ToLower();
             Data = Convert.ToBase64String(block.Data);
@@ -17,7 +17,7 @@ namespace BikeChain.dto
         /// <summary>
         /// unix timestamp in milliseconds
         /// </summary>
-        public double Timestamp { get; private set; }
+        public long Timestamp { get; private set; }
 
         /// <summary>
         /// Hex string representation of the sha256 hash of the previous block
