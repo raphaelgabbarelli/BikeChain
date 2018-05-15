@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using BikeChain.API.WebSockets;
+using BikeChain.API.WebSockets.Handlers;
 
 namespace BikeChain.API
 {
@@ -29,10 +31,13 @@ namespace BikeChain.API
         {
             // Add framework services.
             services.AddMvc();
+
+            // add websocket stuff
+            services.AddWebSocketManager();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IServiceProvider serviceProvider)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
@@ -55,6 +60,14 @@ namespace BikeChain.API
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+
+            var wsOptions = new WebSocketOptions() {
+                KeepAliveInterval = TimeSpan.FromSeconds(60),
+                ReceiveBufferSize = 4 * 1024 // 4k
+            };
+
+            app.UseWebSockets(wsOptions);
+            app.MapWebSocketManager("/blockchain", serviceProvider.GetService<BlockchainHandler>());
         }
     }
 }

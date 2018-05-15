@@ -4,6 +4,7 @@ using System.Text;
 
 namespace BikeChain.dto
 {
+    [Serializable]
     public class BlockDto
     {
         public BlockDto(Block block)
