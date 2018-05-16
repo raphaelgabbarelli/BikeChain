@@ -18,6 +18,8 @@ namespace BikeChain.API.WebSockets.Handlers
         public override async Task OnConnected(WebSocket socket)
         {
             await base.OnConnected(socket);
+
+            Console.WriteLine($"Incoming connection from {WebSocketConnectionManager.GetId(socket)}");
             
             BinaryFormatter binaryFormatter = new BinaryFormatter();
             MemoryStream memoryStream = new MemoryStream();

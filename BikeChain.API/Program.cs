@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using BikeChain.API.WebSockets;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 
@@ -12,6 +13,7 @@ namespace BikeChain.API
     {
         public static Blockchain Blockchain = new Blockchain();
         public static List<string> Peers = new List<string>();
+        public static List<WebSocketWrapper> connectedClients = new List<WebSocketWrapper>();
         
         public static void Main(string[] args)
         {
@@ -20,13 +22,28 @@ namespace BikeChain.API
             .Build();
 
             string peers = configuration["peers"];
+            Console.WriteLine(peers);
             if(!string.IsNullOrEmpty(peers))
             {
                 foreach (var peer in peers.Split(','))
                 {
-                    Peers.Add(peer);
-                    WebSockets.Handlers.BlockchainHandler bch = new WebSockets.Handlers.BlockchainHandler(new WebSockets.WebSocketConnectionManager());
-                    
+                    WebSocketWrapper peerConnection = WebSocketWrapper.Create(peer);
+                    peerConnection.OnConnect(wsw =>
+                    {
+                        Console.WriteLine($"connected to {peer}");
+                    });
+                    peerConnection.OnMessage((message, wsw) =>
+                    {
+                        Console.WriteLine(Convert.ToBase64String(message));
+                    });
+
+                    connectedClients.Add(peerConnection);
+                    peerConnection.Connect();
+                    peerConnection.OnDisconnect(wsw =>
+                    {
+                        Console.WriteLine($"Disconnecting...");
+                        connectedClients.Remove(wsw);
+                    });
                 }
             }
 

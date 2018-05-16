@@ -1,5 +1,6 @@
 ﻿// adapted from https://gist.github.com/xamlmonkey/4737291
 using System;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -18,7 +19,8 @@ namespace BikeChain.API.WebSockets
         private readonly CancellationToken _cancellationToken;
 
         private Action<WebSocketWrapper> _onConnected;
-        private Action<string, WebSocketWrapper> _onMessage;
+        //private Action<string, WebSocketWrapper> _onMessage;
+        private Action<byte[], WebSocketWrapper> _onMessage;
         private Action<WebSocketWrapper> _onDisconnected;
 
         protected WebSocketWrapper(string uri)
@@ -76,7 +78,7 @@ namespace BikeChain.API.WebSockets
         /// </summary>
         /// <param name="onMessage">The Action to call.</param>
         /// <returns></returns>
-        public WebSocketWrapper OnMessage(Action<string, WebSocketWrapper> onMessage)
+        public WebSocketWrapper OnMessage(Action<byte[], WebSocketWrapper> onMessage)
         {
             _onMessage = onMessage;
             return this;
@@ -133,7 +135,7 @@ namespace BikeChain.API.WebSockets
                 {
                     var stringResult = new StringBuilder();
 
-
+                    byte[] data = new byte[0];
                     WebSocketReceiveResult result;
                     do
                     {
@@ -147,13 +149,15 @@ namespace BikeChain.API.WebSockets
                         }
                         else
                         {
+                            data = data.Concat(buffer).ToArray();
+
                             var str = Encoding.UTF8.GetString(buffer, 0, result.Count);
                             stringResult.Append(str);
                         }
 
                     } while (!result.EndOfMessage);
 
-                    CallOnMessage(stringResult);
+                    CallOnMessage(data);
 
                 }
             }
@@ -167,10 +171,16 @@ namespace BikeChain.API.WebSockets
             }
         }
 
-        private void CallOnMessage(StringBuilder stringResult)
+        //private void CallOnMessage(StringBuilder stringResult)
+        //{
+        //    if (_onMessage != null)
+        //        RunInTask(() => _onMessage(stringResult.ToString(), this));
+        //}
+
+        private void CallOnMessage(byte[] data)
         {
-            if (_onMessage != null)
-                RunInTask(() => _onMessage(stringResult.ToString(), this));
+            if(_onMessage != null)
+                RunInTask(() => _onMessage(data, this));
         }
 
         private void CallOnDisconnected()
