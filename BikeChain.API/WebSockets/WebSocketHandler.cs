@@ -66,6 +66,15 @@ namespace BikeChain.API.WebSockets
             }
         }
 
+        public async Task SendMessageToAllAsync(byte[] data)
+        {
+            foreach (var pair in WebSocketConnectionManager.GetAll())
+            {
+                if (pair.Value.State == WebSocketState.Open)
+                    await SendMessageAsync(pair.Value, data);
+            }
+        }
+
         public abstract Task ReceiveAsync(WebSocket socket, WebSocketReceiveResult result, byte[] buffer);
     }
 }

@@ -21,16 +21,27 @@ namespace BikeChain.API.WebSockets.Handlers
 
             Console.WriteLine($"Incoming connection from {WebSocketConnectionManager.GetId(socket)}");
             
-            BinaryFormatter binaryFormatter = new BinaryFormatter();
-            MemoryStream memoryStream = new MemoryStream();
-            binaryFormatter.Serialize(memoryStream, (BlockchainDto)Program.Blockchain);
-            byte[] data = memoryStream.ToArray();
-            await SendMessageAsync(socket, data);
+            await SendMessageAsync(socket, SerializeBlockchain(Program.Blockchain));
         }
 
         public override async Task ReceiveAsync(WebSocket socket, WebSocketReceiveResult result, byte[] buffer)
         {
             await SendMessageAsync(socket, "sending back - " + Encoding.UTF8.GetString(buffer));
+        }
+
+        public async Task BroadcastBlockchain()
+        {
+            Console.WriteLine("broadcasting blockchain");
+
+            await SendMessageToAllAsync(SerializeBlockchain(Program.Blockchain));
+        }
+
+        private byte[] SerializeBlockchain(Blockchain blockchain)
+        {
+            BinaryFormatter binaryFormatter = new BinaryFormatter();
+            MemoryStream memoryStream = new MemoryStream();
+            binaryFormatter.Serialize(memoryStream, (BlockchainDto)blockchain);
+            return memoryStream.ToArray();
         }
     }
 }

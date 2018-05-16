@@ -6,12 +6,19 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using BikeChain.dto;
 using BikeChain.API.Models;
+using BikeChain.API.WebSockets.Handlers;
 
 namespace BikeChain.API.Controllers
 {
     public class HomeController : Controller
     {
         private Blockchain blockchain = Program.Blockchain;
+        private BlockchainHandler websocketBlockchainHandler;
+
+        public HomeController(BlockchainHandler wsBlockchainHandler)
+        {
+            websocketBlockchainHandler = wsBlockchainHandler;
+        }
 
         public JsonResult Blocks()
         {
@@ -32,6 +39,7 @@ namespace BikeChain.API.Controllers
             {
                 byte[] data = Convert.FromBase64String(request.Data);
                 blockchain.AddBlock(data);
+                websocketBlockchainHandler.BroadcastBlockchain().ConfigureAwait(false);
                 return RedirectToAction("Blocks");
             }
             catch (FormatException)
