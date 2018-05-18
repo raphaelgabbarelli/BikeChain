@@ -88,34 +88,38 @@ namespace BikeChain.API.WebSockets
         /// Send a message to the WebSocket server.
         /// </summary>
         /// <param name="message">The message to send</param>
-        public void SendMessage(string message)
+        public void SendMessage(byte[] message)
         {
             SendMessageAsync(message);
         }
 
-        private async Task SendMessageAsync(string message)
+        private async Task SendMessageAsync(byte[] message)
         {
             if (_ws.State != WebSocketState.Open)
             {
                 throw new Exception("Connection is not open.");
             }
 
-            var messageBuffer = Encoding.UTF8.GetBytes(message);
-            var messagesCount = (int)Math.Ceiling((double)messageBuffer.Length / SendChunkSize);
+            Console.WriteLine($"sending {message.Length} bytes");
+            await _ws.SendAsync(new ArraySegment<byte>(message, 0, message.Length), 
+                WebSocketMessageType.Binary, 
+                true, CancellationToken.None);
 
-            for (var i = 0; i < messagesCount; i++)
-            {
-                var offset = (SendChunkSize * i);
-                var count = SendChunkSize;
-                var lastMessage = ((i + 1) == messagesCount);
+            //var messagesCount = (int)Math.Ceiling((double)message.Length / SendChunkSize);
 
-                if ((count * (i + 1)) > messageBuffer.Length)
-                {
-                    count = messageBuffer.Length - offset;
-                }
+            //for (var i = 0; i < messagesCount; i++)
+            //{
+            //    var offset = (SendChunkSize * i);
+            //    var count = SendChunkSize;
+            //    var lastMessage = ((i + 1) == messagesCount);
 
-                await _ws.SendAsync(new ArraySegment<byte>(messageBuffer, offset, count), WebSocketMessageType.Text, lastMessage, _cancellationToken);
-            }
+            //    if ((count * (i + 1)) > message.Length)
+            //    {
+            //        count = message.Length - offset;
+            //    }
+
+            //    await _ws.SendAsync(new ArraySegment<byte>(message, offset, count), WebSocketMessageType.Binary, lastMessage, _cancellationToken);
+            //}
         }
 
         private async Task ConnectAsync()

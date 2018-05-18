@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.WebSockets;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BikeChain.API.WebSockets.Handlers
@@ -26,7 +27,21 @@ namespace BikeChain.API.WebSockets.Handlers
 
         public override async Task ReceiveAsync(WebSocket socket, WebSocketReceiveResult result, byte[] buffer)
         {
-            await SendMessageAsync(socket, "sending back - " + Encoding.UTF8.GetString(buffer));
+            byte[] allData = buffer;
+            while (!result.EndOfMessage)
+            {
+                Console.WriteLine("round");
+                var arrSegment = new ArraySegment<byte>(new byte[1024]);
+                result = await socket.ReceiveAsync(arrSegment, CancellationToken.None).ConfigureAwait(false);
+                allData = allData.Concat(arrSegment.Array).ToArray();
+                Console.WriteLine($"arrSeg length: {arrSegment.Count} - alldata length: {allData.Length}");
+            }
+
+            string base64Message = Convert.ToBase64String(allData);
+            Console.WriteLine($"message length: {allData.Length} - is end of message: {result.EndOfMessage} \n{base64Message}");
+            
+            Blockchain bc = DeserializeBlockchain(allData);
+            Console.WriteLine($"LENGTH: {bc.Length} blocks - Last Block Timestamp {bc.LastBlock.Timestamp}");
         }
 
         public async Task BroadcastBlockchain()
@@ -42,6 +57,15 @@ namespace BikeChain.API.WebSockets.Handlers
             MemoryStream memoryStream = new MemoryStream();
             binaryFormatter.Serialize(memoryStream, (BlockchainDto)blockchain);
             return memoryStream.ToArray();
+        }
+
+        private Blockchain DeserializeBlockchain(byte[] data)
+        {
+            var binFormatter = new BinaryFormatter();
+            var memStream = new MemoryStream(data);
+            var blockchain = binFormatter.Deserialize(memStream) as BlockchainDto;
+
+            return new Blockchain(blockchain);
         }
     }
 }

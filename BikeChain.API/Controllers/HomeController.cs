@@ -40,6 +40,7 @@ namespace BikeChain.API.Controllers
                 byte[] data = Convert.FromBase64String(request.Data);
                 blockchain.AddBlock(data);
                 websocketBlockchainHandler.BroadcastBlockchain().ConfigureAwait(false);
+                Program.BroadcastBlockchain();
                 return RedirectToAction("Blocks");
             }
             catch (FormatException)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace BikeChain.dto
@@ -34,5 +35,24 @@ namespace BikeChain.dto
         /// Base64 representation of the data of this block
         /// </summary>
         public string Data { get; private set; }
+
+        public static explicit operator Block(BlockDto dto)
+        {
+            Block block = new Block(new DateTime(1970, 1, 1).AddMilliseconds(dto.Timestamp),
+                StringToByteArray(dto.PreviousHash),
+                StringToByteArray(dto.Hash),
+                Convert.FromBase64String(dto.Data)
+                );
+            return block;
+        }
+
+        // TODO: move this somewhere else, it's already copied in tests!!!
+        private static byte[] StringToByteArray(string hex)
+        {
+            return Enumerable.Range(0, hex.Length)
+                .Where(x => x % 2 == 0)
+                .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
+                .ToArray();
+        }
     }
 }

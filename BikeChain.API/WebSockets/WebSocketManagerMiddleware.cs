@@ -49,7 +49,7 @@ namespace BikeChain.API.WebSockets
 
         private async Task Receive(WebSocket socket, Action<WebSocketReceiveResult, byte[]> handleMessage)
         {
-            var buffer = new byte[1024 * 4];
+            var buffer = new byte[1024];
 
             while (socket.State == WebSocketState.Open)
             {
