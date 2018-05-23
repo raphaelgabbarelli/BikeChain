@@ -20,6 +20,11 @@ namespace BikeChain
             blocks.Add(blockRepo.CreateGenesisBlock());
         }
 
+        public Blockchain(BlockchainDto dto)
+        {
+            blocks = dto.Blocks.Select(s => (Block) s).ToList();
+        }
+
         /// <summary>
         /// Creates and adds a new block to the blockchain
         /// </summary>
