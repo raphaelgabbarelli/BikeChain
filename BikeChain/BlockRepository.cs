@@ -16,7 +16,7 @@ namespace BikeChain
         {
             using (var hasher = SHA256.Create())
             {
-                return new Block(new DateTime(1998, 6, 7), hasher.ComputeHash(Encoding.UTF8.GetBytes("keepcalmandstravaon")), hasher.ComputeHash(Encoding.UTF8.GetBytes("thepirate")), new byte[] { });
+                return new Block(new DateTime(1998, 6, 7), hasher.ComputeHash(Encoding.UTF8.GetBytes("keepcalmandstravaon")), hasher.ComputeHash(Encoding.UTF8.GetBytes("thepirate")), new byte[] { }, 0, Encoding.UTF8.GetBytes("genesisnonce"));
             }
         }
 
@@ -34,15 +34,46 @@ namespace BikeChain
             if (data == null) throw new ArgumentNullException("data", "data cannot be null");
             if (data.Length == 0) throw new ArgumentException("data cannot be empty", "data");
 
-            DateTime timestamp = DateTime.UtcNow;
-            byte[] hash = HashBlock(timestamp, previousBlock.Hash, data);
+            bool blockMined = false;
+            RNGCryptoServiceProvider randomizer = new RNGCryptoServiceProvider();
+            
+            while(!blockMined)
+            {
+                // block generation target: 60 seconds
+                DateTime timestamp = DateTime.UtcNow;
+                int difficulty = previousBlock.Difficulty; 
+                
+                if((timestamp - previousBlock.Timestamp) < TimeSpan.FromSeconds(60))
+                {
+                    difficulty += 1;
+                }
+                else if(difficulty > 1) // if the block has been mined too quickly, and difficulty can be lowered
+                {
+                    difficulty -= 1;
+                }
 
-            return new Block(timestamp, previousBlock.Hash, hash, data);
+                if (difficulty < 1)
+                {
+                    difficulty = 1;
+                }
+
+                byte[] nonce = new byte[16];
+                randomizer.GetBytes(nonce);
+
+                byte[] hash = HashBlock(timestamp, previousBlock.Hash, data, difficulty, nonce);
+
+                if(hash.Take(difficulty).All(b => b == 0))
+                {
+                    return new Block(timestamp, previousBlock.Hash, hash, data, difficulty, nonce);
+                }
+            }
+
+            return null;
         }
 
-        public byte[] HashBlock(DateTime timestamp, byte[] previousHash, byte[] data)
+        public byte[] HashBlock(DateTime timestamp, byte[] previousHash, byte[] data, int difficulty, byte[] nonce)
         {
-            byte[] toHash = Encoding.UTF8.GetBytes(timestamp.Ticks.ToString()).Concat(previousHash).Concat(data).ToArray<byte>();
+            byte[] toHash = Encoding.UTF8.GetBytes(timestamp.Ticks.ToString()).Concat(previousHash).Concat(data).Concat(BitConverter.GetBytes(difficulty)).Concat(nonce).ToArray<byte>();
 
             byte[] hash = new byte[32];
             using (var hasher = SHA256.Create())
@@ -53,7 +84,7 @@ namespace BikeChain
 
         public byte[] HashBlock(Block block)
         {
-            return HashBlock(block.Timestamp, block.PreviousHash, block.Data);
+            return HashBlock(block.Timestamp, block.PreviousHash, block.Data, block.Difficulty, block.Nonce);
         }
     }
 }
