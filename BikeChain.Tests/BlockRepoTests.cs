@@ -43,6 +43,46 @@ namespace BikeChain.Tests
             Assert.NotNull(newBlock);
             Assert.Equal(genesis.Hash, newBlock.PreviousHash);
             Assert.Contains(Convert.ToBase64String(data), newBlock.ToString());
+            Assert.Equal(1, newBlock.Difficulty);
+            Assert.Equal(0, newBlock.Hash[0]);
+        }
+
+        [Fact]
+        public void IncreaseDifficulty()
+        {
+            BlockRepository blockRepo = new BlockRepository();
+            Block genesis = blockRepo.CreateGenesisBlock(); // using genesis as template
+            genesis.Difficulty = 1;
+            genesis.Timestamp = DateTime.UtcNow.AddSeconds(-1);
+
+            byte[] data = Encoding.UTF8.GetBytes("fakedata");
+            Block newBlock = blockRepo.MineBlock(genesis, data);
+
+            Assert.NotNull(newBlock);
+            Assert.Equal(genesis.Hash, newBlock.PreviousHash);
+            Assert.Contains(Convert.ToBase64String(data), newBlock.ToString());
+            Assert.Equal(2, newBlock.Difficulty);
+            Assert.Equal(0, newBlock.Hash[0]);
+            Assert.Equal(0, newBlock.Hash[1]);
+        }
+
+        [Fact]
+        public void ReduceDifficulty()
+        {
+            BlockRepository blockRepo = new BlockRepository();
+            Block genesis = blockRepo.CreateGenesisBlock(); // using genesis as template
+            genesis.Difficulty = 3;
+            genesis.Timestamp = DateTime.UtcNow.AddSeconds(-100);
+
+            byte[] data = Encoding.UTF8.GetBytes("fakedata");
+            Block newBlock = blockRepo.MineBlock(genesis, data);
+
+            Assert.NotNull(newBlock);
+            Assert.Equal(genesis.Hash, newBlock.PreviousHash);
+            Assert.Contains(Convert.ToBase64String(data), newBlock.ToString());
+            Assert.Equal(2, newBlock.Difficulty);
+            Assert.Equal(0, newBlock.Hash[0]);
+            Assert.Equal(0, newBlock.Hash[1]);
         }
     }
 }

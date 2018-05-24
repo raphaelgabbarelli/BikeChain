@@ -15,7 +15,7 @@ namespace BikeChain.Tests
             const string FAKE_DATA = "fakedata";
 
             var timestamp = DateTime.UtcNow;
-            Block block = new Block(timestamp, Encoding.UTF8.GetBytes(PREV_HASH), Encoding.UTF8.GetBytes(THIS_HASH), Encoding.UTF8.GetBytes(FAKE_DATA));
+            Block block = new Block(timestamp, Encoding.UTF8.GetBytes(PREV_HASH), Encoding.UTF8.GetBytes(THIS_HASH), Encoding.UTF8.GetBytes(FAKE_DATA), 1, new byte[] { });
 
             string representation = block.ToString();
 

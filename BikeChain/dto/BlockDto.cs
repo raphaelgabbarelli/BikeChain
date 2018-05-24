@@ -14,6 +14,8 @@ namespace BikeChain.dto
             PreviousHash = BitConverter.ToString(block.PreviousHash).Replace("-", "").ToLower();
             Hash = BitConverter.ToString(block.Hash).Replace("-", "").ToLower();
             Data = Convert.ToBase64String(block.Data);
+            Difficulty = block.Difficulty;
+            Nonce = Convert.ToBase64String(block.Nonce);
         }
 
         /// <summary>
@@ -36,12 +38,24 @@ namespace BikeChain.dto
         /// </summary>
         public string Data { get; private set; }
 
+        /// <summary>
+        /// Difficulty at which this block has been mined
+        /// </summary>
+        public int Difficulty { get; set; }
+
+        /// <summary>
+        /// Base64 representation of the nonce
+        /// </summary>
+        public string Nonce { get; set; }
+
         public static explicit operator Block(BlockDto dto)
         {
             Block block = new Block(new DateTime(1970, 1, 1).AddMilliseconds(dto.Timestamp),
                 StringToByteArray(dto.PreviousHash),
                 StringToByteArray(dto.Hash),
-                Convert.FromBase64String(dto.Data)
+                Convert.FromBase64String(dto.Data),
+                dto.Difficulty,
+                Convert.FromBase64String(dto.Nonce)
                 );
             return block;
         }
